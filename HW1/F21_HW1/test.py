@@ -1,0 +1,90 @@
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+from scipy.stats import ks_2samp
+
+gdp = pd.read_csv('GDP.csv', skiprows=range(5), header= None, usecols=[0,1,3,4], nrows=190,encoding='ISO-8859-1')
+gdp.columns = ['CountryCode', 'Rank', 'CountryName', 'GDP']
+Country = pd.read_csv('Country.csv',encoding='ISO-8859-1')
+
+dc = pd.DataFrame({'A' : [1, 2, 3, 4],'B' : [4, 3, 2, 1],'C' : [3, 4, 2, 2]})
+plt.plot(dc)
+plt.show
+
+
+g = list(range(50, 10000, 50))
+
+s = pd.merge(gdp, Country, on="CountryCode")
+B = s
+B.GDP = B.GDP.apply(lambda x : x.replace(',',''))
+print(B)
+B = B.astype({"GDP":np.int64})
+num = 0
+print(B["GDP"])
+for x in B["GDP"]:
+    num += x
+    print(x)
+num = num / 189
+AVG = B["GDP"].mean()
+print(B)
+REG = B.groupby(["Region"]).agg({"GDP" : {'mean', np.std}})
+print(REG)
+print(REG.agg({'mean'}))
+for i in s["GDP"]:
+    print(i)
+J = s.groupby('Region').mean()
+print(J.columns)
+#print(s.columns)
+#print(len(gdp.CountryCode))
+#print(len(Country.CountryCode))
+#print(len(s.CountryCode))
+x = s["Region"].value_counts()
+#s['Region'].value_counts().plot(kind='bar')
+x = s["GDP"]
+
+x = s.groupby('Region')
+print(s)
+vv = s["Region"].unique().tolist()
+
+cc = [38.0, 2.0, 18.0, 22.0, 21, 0,0]*7
+df = pd.DataFrame([[38.0, 2.0, 18.0, 22.0, 21, 0,0],[38.0, 2.0, 18.0, 22.0, 21, 0,0],[38.0, 2.0, 18.0, 22.0, 21, 0,0],[38.0, 2.0, 18.0, 22.0, 21, 0,0],[38.0, 2.0, 18.0, 22.0, 21, 0,0],[38.0, 2.0, 18.0, 22.0, 21, 0,0],[38.0, 2.0, 18.0, 22.0, 21, 0,0]],
+                  index=pd.Index( vv, name='Regions'),
+                  columns=pd.Index(vv))
+print(df)
+
+
+for i in s["Region"].unique():
+    print(i)
+y = x.get_group("Europe & Central Asia")
+d = y["GDP"]
+base = []
+for i in s["Region"].unique():
+    new = []
+    for j in s["Region"].unique():
+        r1 = x.get_group(i)
+        r2 = x.get_group(j)
+        test= r1["GDP"]
+        test2= r2["GDP"]
+        p = ks_2samp(r1["GDP"],r2["GDP"])
+        sting = '(%0.5f' % p[0]
+        sting += ', %0.5f)' % p[1]
+        new.append(sting)
+    base.append(new)
+
+df = pd.DataFrame(base,
+                  index=pd.Index( vv, name='Regions (stat, p)'),
+                  columns=pd.Index(vv))
+print(df)
+
+
+x = ks_2samp(d,d)
+print(y)
+for i in y:
+    print(i)
+x = ks_2samp(s["Region"],s["GDP"])
+print(x)
+o=0
+for i in x:
+    print(i)
+    o+=i
+x=3

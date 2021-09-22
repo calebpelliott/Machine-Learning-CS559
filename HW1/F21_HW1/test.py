@@ -3,6 +3,17 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from scipy.stats import ks_2samp
 
+def flip_coin(prob, times, numCoins, numOccur):
+    num = 0
+    for trial in range(times):
+        numHeads = 0
+        for coin in range(numCoins):
+            if prob < np.random.rand():
+                numHeads += 1
+        if numHeads == numOccur:
+            num += 1
+    return num
+
 gdp = pd.read_csv('GDP.csv', skiprows=range(5), header= None, usecols=[0,1,3,4], nrows=190,encoding='ISO-8859-1')
 gdp.columns = ['CountryCode', 'Rank', 'CountryName', 'GDP']
 Country = pd.read_csv('Country.csv',encoding='ISO-8859-1')
@@ -12,7 +23,35 @@ plt.plot(dc)
 plt.show
 
 
-g = list(range(50, 10000, 50))
+g = list(range(50, 10050, 50))
+e = len(g)
+q = list(range(1, 200))
+pi = .5
+n = 20
+k = 10
+w = np.random.binomial(9, 0.1, 20000)# == 0
+s = []
+for x in g:
+    #result = flip_coin(pi, x, n, k)
+    tests = np.random.binomial(n,pi,x)
+    succ = tests == k
+    succ_tot = sum(succ)
+    succ_prob = succ_tot/x
+    p = sum(np.random.binomial(n,pi,x) == k)
+    s.append(p/x)
+ProbTable=pd.DataFrame()
+ProbTable.t = g 
+ProbTable.s = s 
+z = sum(s) / len(s)
+plt.plot(ProbTable.t, ProbTable.s, 'g-')
+plt.axhline(y=z, color='r', linestyle='--')
+plt.xlabel('X')
+plt.ylabel('Probability')
+plt.title('Probability vs. ')
+plt.show()
+
+
+
 
 s = pd.merge(gdp, Country, on="CountryCode")
 B = s

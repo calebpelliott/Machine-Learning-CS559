@@ -86,8 +86,12 @@ for i in range(len(eigen_val)):
 eigen_list.sort(key = lambda x: x[0])
 eigen_list.reverse()
 
-
-
+#7
+t_matrix_w = np.hstack((t_eig_pairs[0][1].reshape(3,1), t_eig_pairs[1][1].reshape(3,1)))
+a1 = np.array([np.array([eigen_list[0][1][0], eigen_list[1][1][0]])])
+a2 = np.array([np.array([eigen_list[0][1][1], eigen_list[1][1][1]])])
+a3 = np.array([np.array([eigen_list[0][1][2], eigen_list[1][1][2]])])
+w = np.array([a1, a2, a3])
 
 
 

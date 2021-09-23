@@ -91,7 +91,36 @@ t_matrix_w = np.hstack((t_eig_pairs[0][1].reshape(3,1), t_eig_pairs[1][1].reshap
 a1 = np.array([np.array([eigen_list[0][1][0], eigen_list[1][1][0]])])
 a2 = np.array([np.array([eigen_list[0][1][1], eigen_list[1][1][1]])])
 a3 = np.array([np.array([eigen_list[0][1][2], eigen_list[1][1][2]])])
-w = np.array([a1, a2, a3])
+w = np.append(a1, a2, 0)
+w = np.append(w, a3, 0)
+g = np.column_stack(all_samples)
+t_reduced = t_matrix_w.T.dot(t_all_samples)
+reduced = w.T.dot(np.column_stack(all_samples))
+
+#8
+fig = plt.figure(figsize = (8,8))
+ax = fig.add_subplot(1,1,1) 
+ax.set_xlabel('Principal Component 1', fontsize = 15)
+ax.set_ylabel('Principal Component 2', fontsize = 15)
+ax.set_title('2 component implemented PCA', fontsize = 20)
+plt.plot(reduced[0,0:30], reduced[1,0:30], 'o', markersize=7, color='blue', alpha=0.5, label='class1')
+plt.plot(reduced[0,30:60], reduced[1,30:60], '^', markersize=7, color='red', alpha=0.5, label='class2')
+plt.show()
+
+plt.plot(reduced[0,0:30], reduced[1,0:30], 'o', markersize=7, color='blue', alpha=0.5, label='class1')
+plt.plot(reduced[0,30:60], reduced[1,30:60], '^', markersize=7, color='red', alpha=0.5, label='class2')
+plt.xlim([-4,4])
+plt.ylim([-4,4])
+plt.xlabel('x_values')
+plt.ylabel('y_values')
+plt.legend()
+plt.title('Transformed samples with class labels')
+
+plt.show()
+
+
+
+
 
 
 

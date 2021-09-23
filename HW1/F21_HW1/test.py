@@ -18,7 +18,7 @@ def MY_KMeans(n, data):
     #Iterate through data and assign random data points to groups
     count = 0
     for i in range(len(data)):
-        idx = 0#np.random.randint(0, len(data)
+        idx = np.random.randint(0, len(data))
         dp = data[idx]
         data = np.delete(data,idx,0)
         if not count in groupMap.keys():

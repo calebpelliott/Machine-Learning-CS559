@@ -1,7 +1,51 @@
 import numpy as np
+from numpy.lib.function_base import delete
 import pandas as pd
 import matplotlib.pyplot as plt
 from scipy.stats import ks_2samp
+from sklearn.cluster import KMeans
+
+a = np.array([[1,2,3],[4,5,6]]) 
+
+
+a = np.append(a, [[7,8,9]],0) 
+
+
+
+def MY_KMeans(n, data):
+    groupMap = {}
+
+    #Iterate through data and assign random data points to groups
+    count = 0
+    for i in range(len(data)):
+        idx = 0#np.random.randint(0, len(data)
+        dp = data[idx]
+        data = np.delete(data,idx,0)
+        if not count in groupMap.keys():
+            groupMap[count] = {'dp' :[dp], 'centroid':None}
+        else:
+            points = np.append(groupMap[count]['dp'], [dp], axis=0)
+            groupMap[count]['dp'] = points
+        count = (count + 1) % n
+
+    converged = False
+    while not converged:
+        calculateCentroids()
+data = []
+e = np.array([[.5,.5]])
+e = np.append(e, [[.1,.1]], axis=0)
+data = np.random.randint(-10, 10, size=(100, 2))
+#for x in range(100):
+#    data.append(np.random.random((2,2)))
+
+MY_KMeans(3, data)
+
+Data = pd.read_csv('HW1_Q1_0.csv',encoding='ISO-8859-1')
+Data.columns = ['X', 'Y']
+
+kmeans = KMeans()
+kmeans.set_params(n_clusters=5)
+kmeans.fit(Data)
 
 def flip_coin(prob, times, numCoins, numOccur):
     num = 0

@@ -68,6 +68,27 @@ for i in all_samples:
     intmd = intmd.dot((intmd).T)
     sm = sm + intmd
 
+#4
+t_eig_val_sc, t_eig_vec_sc = np.linalg.eig(t_sm)
+
+#Need eig_vec_sc for plot below
+eigen_val, eig_vec_sc = np.linalg.eig(sm)
+
+#5
+# Make a list of (eigenvalue, eigenvector) tuples
+t_eig_pairs = [(np.abs(t_eig_val_sc[i]), t_eig_vec_sc[:,i]) for i in range(len(t_eig_val_sc))]
+# Sort the (eigenvalue, eigenvector) tuples from high to low
+t_eig_pairs.sort(key=lambda x: x[0], reverse=True)
+
+eigen_list = []
+for i in range(len(eigen_val)):
+    eigen_list.append((np.abs(eigen_val[i]), eig_vec_sc[:,i]))
+eigen_list.sort(key = lambda x: x[0])
+eigen_list.reverse()
+
+
+
+
 
 
 

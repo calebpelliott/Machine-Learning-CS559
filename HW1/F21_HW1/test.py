@@ -10,7 +10,38 @@ a = np.array([[1,2,3],[4,5,6]])
 
 a = np.append(a, [[7,8,9]],0) 
 
+def calculateCentroids(map):
+    for item in map:
+        avgx = sum(map[item]['dp'][:,0]) / len(map[item]['dp'])
+        avgy = sum(map[item]['dp'][:,1]) / len(map[item]['dp'])
+        map[item]['centroid'] = np.array([avgx, avgy])
+    return map
 
+def regroupPoints(map):
+    newMap = {}
+    for item in map:
+        newMap[item] = {'dp' :None, 'centroid':map[item]['centroid']}
+    changeOccured = False
+    for item in map:
+        for dp in map[item]['dp']:
+            shortest = None
+            newGroup = None
+            for cent in map:
+                dist = np.linalg.norm(dp - map[cent]['centroid'])
+                if shortest is None:
+                    shortest = dist
+                    newGroup = cent
+                elif dist < shortest:
+                    shortest = dist
+                    newGroup = cent
+
+            if item != newGroup:
+                changeOccured = True
+            if newMap[newGroup]['dp'] is None:
+                newMap[newGroup]['dp'] = [dp]
+            else:    
+                newMap[newGroup]['dp'] = np.append(newMap[newGroup]['dp'], [dp],0)
+    return changeOccured, newMap
 
 def MY_KMeans(n, data):
     groupMap = {}
@@ -30,13 +61,15 @@ def MY_KMeans(n, data):
 
     converged = False
     while not converged:
-        calculateCentroids()
+        groupMap = calculateCentroids(groupMap)
+        converged, groupMap = regroupPoints(groupMap)
+
+    return groupMap
+
 data = []
 e = np.array([[.5,.5]])
 e = np.append(e, [[.1,.1]], axis=0)
 data = np.random.randint(-10, 10, size=(100, 2))
-#for x in range(100):
-#    data.append(np.random.random((2,2)))
 
 MY_KMeans(3, data)
 

@@ -14,22 +14,53 @@ new_df = df[['b', 'y']]
 
 
 
-def calcBVec(data, w):
-    x = data.iloc[:,0:-1]
+def calcWvec(data, r_n):
+    x = data.iloc[:, 0:-1]
     y = data.iloc[:,-1]
+    
+    xnp = x.to_numpy()
+    ynp = y.to_numpy().reshape(-1,1)
+
+    if len(xnp.shape) == 1:
+        xnp = xnp.reshape(-1,1)
+    W = np.linalg.inv(xnp.T.dot(r_n*xnp)).dot(xnp.T).dot(r_n*ynp)
+    return W
+
+def my_error(data, r_n):
+    y = data.iloc[:,-1]
+    x = data.iloc[:,0]
+
+    xnp = x.to_numpy().reshape(-1,1)
+    ynp = y.to_numpy().reshape(-1,1)
+
+    w = calcWvec(data, r_n)
+    A = (y - w.T.dot(x))
+    error = .5 * r_n
+
+def calcBVec(data, w):
+    x = data.iloc[:, 0:-1]
+    y = data.iloc[:,-1]
+    bb = np.array([1] * 5000 + [2] * 5000)
+    LR = LinearRegression()
+    w = bb.reshape(-1, 1)
+    LR.fit(x,y, bb)
+    xnp = x.to_numpy()#.reshape(-1,1)
+    ynp = y.to_numpy().reshape(-1,1)
+    if len(xnp.shape) == 1:
+        xnp = xnp.reshape(-1,1)
+
+    A = np.linalg.inv(xnp.T.dot(xnp)).dot(xnp.T).dot(ynp)
+    BB = w*xnp
+    B1 = np.linalg.inv(xnp.T.dot(w*xnp)).dot(xnp.T).dot(w*ynp)
+    #B = np.linalg.inv(x.T.dot(w).dot(x)).dot(x.T).dot(w).dot(ynp)
+
     b_vec = []
     b0 = []
     for xn in x:
         x0 = x[xn]
-        xwt_sum = 0
-        ywt_sum = 0
         w_sum = w.sum()
-        for i in range(len(y)):
-            xwt_sum += w[i] * x0[i]
-            ywt_sum += w[i] * y[i]
-
-        xw_bar = xwt_sum / w_sum
-        yw_bar = ywt_sum / w_sum
+        xw_bar = w.T.dot(x0) / w_sum
+        yw_bar = w.T.dot(y) / w_sum
         x_bar = x0.sum() / len(x0)
         y_bar = y.sum() / len(y)
         t_sum = 0
@@ -39,6 +70,8 @@ def calcBVec(data, w):
             yi = y[i]
             t_sum += w[i]*(xi - xw_bar)*(yi - yw_bar)
             b_sum += w[i]*((xi - xw_bar)**2)
+        #tt_sum = (w * (x0 - xw_bar)).T.dot((y - yw_bar))
+        #bb_sum = w.T.dot(w * (x0 - xw_bar)**2)
         b_vec.append(t_sum/b_sum)
         b0.append(yw_bar - b_vec[0]*xw_bar)
         
@@ -49,7 +82,8 @@ def calcBVec(data, w):
     b0_sum = (b0[0] + b0[1])/2
     return b_vec
 
-calcBVec(df[['b', 'c', 'y']], np.array([1]*10000))
+calcBVec(df[['b', 'c', 'y']], np.array([1]*10000).reshape(-1,1))
+my_error(df[['b', 'y']], np.array([1]*10000).reshape(-1,1))
 new_y = new_df['y'].values
 new_df['y'] = new_y[new_y > -4000000]
 scaler = QuantileTransformer()

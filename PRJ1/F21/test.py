@@ -19,6 +19,26 @@ from sklearn.linear_model import LogisticRegression
 
 df = pd.read_csv("C:/Users/caleb/Documents/git/Machine-Learning-CS559/PRJ1/F21/H.csv")
 
+
+nn = pd.get_dummies(df.Class, columns=['c1', 'c2', 'c3', 'c4', 'c5', 'c6'])
+#nn = nn.rename(columns={'c1', 'c2', 'c3', 'c4', 'c5', 'c6'})
+newdf = df.join(nn)
+
+newdf = newdf[['var4','var5','var6','var7','var8','var9',1,2,3,4,5,6]]
+corr = newdf.corr()
+corr.style.background_gradient(cmap='coolwarm')
+
+c1 = df[df['Class'] == 1]#np.array([1]*1249 + [0]*(7500-1249)).reshape(-1,1)
+counts = df["Class"].value_counts()
+corr = df.corr()
+#print(corr['c1'].sort_values(ascending=False))
+
+
+
+
+
+
+
 new_df = df[['var4', 'var5', 'var6', 'var7', 'var8', 'var9']]
 result_df = df[['Class']]
 

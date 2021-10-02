@@ -1,3 +1,4 @@
+from numpy.lib.twodim_base import tri
 import pandas as pd
 import numpy as np
 
@@ -19,36 +20,48 @@ from sklearn.linear_model import LogisticRegression
 df = pd.read_csv("C:/Users/caleb/Documents/git/Machine-Learning-CS559/PRJ1/F21/H.csv")
 
 new_df = df[['var4', 'var5', 'var6', 'var7', 'var8', 'var9']]
+result_df = df[['Class']]
+
 
 kmeans = KMeans()
 kmeans.set_params(n_clusters=6)
 kmeans.fit(new_df)
 
-guess = []
-for i in range(len(new_df)):
-    dp = new_df.loc[[i]]#.values
-    c = kmeans.predict(dp)
-    guess.append(c[0])
-    x = 3
-class_guesses = []
-count = 0
-for i in range(6):
-    class_guesses.append(guess[count : count + 1250])
-    count += 1250
+knn = KNeighborsClassifier(15)
+knn.fit(new_df, df.iloc[:,-1])
 
-for guess in class_guesses:
-    mode = max(set(guess), key=guess.count)
-    right = guess.count(mode)
-    wrong = 1250 - right
-    wg = guess[-1]
-cl = guess[0:1250]
-c2 = guess[1250:2500]
-c3 = guess[1250:2500]
-c4 = guess[1250:2500] 
-c5 = guess[1250:2500]
-c6 = guess[1250:2500]
-guess = np.array(guess).reshape(-1,1)
-fin = df[['Class']]
-fin['pred'] = guess
+lr = LogisticRegression()
+lr.fit(new_df, df.iloc[:,-1])
+#knn.fit(new_df)
+km_guess = kmeans.predict(new_df)
+knn_guess = knn.predict(new_df)
+lr_guess = lr.predict(new_df)
+result_df['kmean'] = km_guess
+result_df['knn'] = knn_guess
 
-fin.to_csv("C:/Users/caleb/Documents/git/Machine-Learning-CS559/PRJ1/F21/predict.csv")
+#result_df.to_csv("C:/Users/caleb/Documents/git/Machine-Learning-CS559/PRJ1/F21/predict.csv")
+
+
+
+
+
+def calcK(guess):
+    count = 0
+    class_guesses = []
+    for _ in range(6):
+        class_guesses.append(guess[count : count + 1250])
+        count += 1250
+
+    tright = 0
+    for cg in class_guesses:
+        cg = cg.tolist()
+        mode = max(set(cg), key=cg.count)
+        right = cg.count(mode)
+        tright += right
+        print(f"Group found: {mode}")
+    k = tright / 7500 * 100
+    print(f"Accuracy {k}%")
+
+calcK(km_guess)
+calcK(knn_guess)
+calcK(lr_guess)

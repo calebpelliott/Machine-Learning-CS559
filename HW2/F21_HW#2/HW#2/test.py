@@ -8,12 +8,68 @@ from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 from sklearn.preprocessing import QuantileTransformer
 from sklearn.preprocessing import MinMaxScaler
-df = pd.read_csv('./HW2_LR.csv')
+df = pd.read_csv("C:/Users/caleb/Documents/git/Machine-Learning-CS559/HW2/F21_HW#2/HW#2/HW2_LR.csv")
 print(df.head(5))
 new_df = df[['b', 'y']]
 
+peas = np.array([[0.21, 0.1726], 
+                [0.2, 0.1707], 
+                [0.19, 0.1637],
+                [0.18, 0.164],
+                [0.17, 0.1613],
+                [0.16, 0.1617],
+                [0.15, 0.1598]])
+
+variance = np.var(peas, axis=1)
+std = np.std(peas, axis=1)
+
+np.random.seed(1)
+N = 30
+## generate a random array with 2 columns
+beta = np.array([2, -7, 5])
+x_m = np.random.randn(N, 2)
+y_m = np.dot(np.append(np.ones((N,1)), x_m, axis=1), beta) + np.random.randn(N)*4
+
+## transform x to a matrix
+x_m = np.mat(x_m)
+## y transpose converts y into a column vector
+y_m = np.mat(y_m).T
+## add a column of 1’s to x
+x_m = np.column_stack((np.ones([x_m.shape[0], 1]), x_m))
+## matrix.I returns the inverse of that matrix
+B = (x_m.T*x_m).I * x_m.T * y_m
+
+np.random.seed(1)
+x_m = np.random.randn(N, 2)
+variance = np.var(x_m, axis=1)
+y_m = np.dot(np.append(np.ones((N,1)), x_m, axis=1), beta) + np.random.randn(N)*4
+r_n = np.reciprocal(variance)#np.random.randn(N)+2
+
+variance = np.var(x_m, axis=1)
+a = np.reciprocal(variance)
+aa = np.diagflat(a)
 
 
+## weighted
+w = np.diag(r_n)
+w = np.diagflat(r_n)#np.mat(w)
+x_m = np.mat(x_m)
+
+## y transpose converts y into a column vector
+y_m = np.mat(y_m).T
+## add a column of 1’s to x
+x_m = np.column_stack((np.ones([x_m.shape[0], 1]), x_m))
+## matrix.I returns the inverse of that matrix
+B = (x_m.T*w*x_m).I * x_m.T  * w * y_m
+B = B.T
+e = 0
+for i in range(len(y_m)):
+    t_n = y_m[i]
+    x_n = x_m[i]
+    est = B * x_n.T
+    e_n = r_n[i] * (t_n - est)**2
+    e += e_n
+faer = 44
 def calcWvec(data, r_n):
     x = data.iloc[:, 0:-1]
     y = data.iloc[:,-1]
@@ -21,8 +77,15 @@ def calcWvec(data, r_n):
     xnp = x.to_numpy()
     ynp = y.to_numpy().reshape(-1,1)
 
+    #r_n needs to be made into diagonal
+    r_diag = np.diag(r_n)
     if len(xnp.shape) == 1:
         xnp = xnp.reshape(-1,1)
+
+    xx = xnp.T
+    t = xx*r_diag
+    ww = xnp.dot(r_diag)
+    W = np.linalg.inv(xnp.T.dot(r_diag).dot(xnp)).dot(xnp.T).dot(r_diag).dot(ynp)
     W = np.linalg.inv(xnp.T.dot(r_n*xnp)).dot(xnp.T).dot(r_n*ynp)
     return W
 
@@ -82,7 +145,7 @@ def calcBVec(data, w):
     b0_sum = (b0[0] + b0[1])/2
     return b_vec
 
-calcBVec(df[['b', 'c', 'y']], np.array([1]*10000).reshape(-1,1))
+calcWvec(df[['b', 'c', 'y']], np.array([1,1]))
 my_error(df[['b', 'y']], np.array([1]*10000).reshape(-1,1))
 new_y = new_df['y'].values
 new_df['y'] = new_y[new_y > -4000000]

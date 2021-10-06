@@ -1,6 +1,8 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
+from pandas.core.frame import DataFrame
+import seaborn as sns
 from sklearn.linear_model import LinearRegression
 from sklearn.metrics import mean_squared_error
 from sklearn.datasets import load_iris
@@ -39,16 +41,145 @@ x_m = np.column_stack((np.ones([x_m.shape[0], 1]), x_m))
 ## matrix.I returns the inverse of that matrix
 B = (x_m.T*x_m).I * x_m.T * y_m
 
-np.random.seed(1)
-x_m = np.random.randn(N, 2)
-variance = np.var(x_m, axis=1)
-y_m = np.dot(np.append(np.ones((N,1)), x_m, axis=1), beta) + np.random.randn(N)*4
-r_n = np.reciprocal(variance)#np.random.randn(N)+2
 
+def calcWvec(data, r_n):
+    x = data.iloc[:, 0:-1]
+    y = data.iloc[:,-1]
+    size = y.size
+    ones = np.array([1]*size).reshape(-1,1)
+    x_m = np.mat(np.append(ones, x.to_numpy(),1))
+    y_m = np.mat(y.to_numpy().reshape(-1,1))
+    #make diaganol of r
+    w = np.mat(np.diagflat(r_n))
+
+    B = (x_m.T*w*x_m).I * x_m.T  * w * y_m
+    return B.T
+
+def my_error(data, r_n):
+    x = data.iloc[:, 0:-1]
+    y = data.iloc[:,-1]
+    size = y.size
+    ones = np.array([1]*size).reshape(-1,1)
+    x_m = np.mat(np.append(ones, x.to_numpy(),1))
+    y_m = np.mat(y.to_numpy().reshape(-1,1))
+    w = calcWvec(data, r_n)
+    
+    e = 0
+    for i in range(len(y_m)):
+        t_n = y_m[i]
+        x_n = x_m[i]
+        est = w * x_n.T
+        e_n = r_n[i] * (t_n - est)**2
+        e += e_n
+    return e/2
+faer = 44
+
+df.hist()
+#plt.show()
+uniform_df=df[['a', 'b', 'c']]
+scaler = QuantileTransformer(output_distribution='normal')
+df_scale= scaler.fit_transform(uniform_df)
+df['a'] = df_scale[:,0].reshape(-1,1)
+df['b'] = df_scale[:,1].reshape(-1,1)
+df['c'] = df_scale[:,2].reshape(-1,1)
+
+rskew_df=df[['k']]
+u = rskew_df.to_numpy().min()
+a = rskew_df.to_numpy()
+rskew_df += np.abs(rskew_df.to_numpy().min())
+a = rskew_df.to_numpy()
+rskew_df= np.power((rskew_df),1/3)
+df['k'] = rskew_df
+rskew_df.hist()
+#plt.show()
+
+lskew_df=df[['d']]
+u = lskew_df.to_numpy().min()
+lskew_df += np.abs(lskew_df.to_numpy().min())
+lskew_df.hist()
+#plt.show()
+lskew_df= np.power((lskew_df),2)
+lskew_df.hist()
+#plt.show()
+df['d'] = lskew_df
+
+
+scaler = StandardScaler()
+scale = scaler.fit_transform(df)
+f_df = DataFrame(scale, columns=['a','b','c','d','k','y'])
+print(f_df.head(5))
+
+X = f_df[['b']]
+y = f_df[['y']]
+### Linear Regression Modeling starts here
+LR = LinearRegression()
+LR.fit(X, y)
+
+y_train_pred = LR.predict(X)
+from sklearn.metrics import mean_squared_error
+print('MSE train: %.3f' %(mean_squared_error(y,y_train_pred)))
+#                                     mean_squared_error(y_test,y_test_pred)))
+from sklearn.metrics import r2_score
+print('R^2 train: %.3f' %(r2_score(y,y_train_pred)))
+#                                     r2_score(y_test,y_test_pred)))
+
+
+f_df.hist()
+plt.show()
+
+df.hist()
+plt.show()
+
+
+
+
+
+data = df[['b', 'y']]
+data.hist()
+plt.show()
+print(data.head(5))
+db = data[['b']]
+dy = data[['y']]
+
+plt.hist(db, color='green', bins=100)
+plt.show()
+
+scaler = QuantileTransformer(output_distribution='normal')
+db_scale = scaler.fit_transform(db)
+
+plt.hist(db_scale, color='green', bins=100)
+plt.show()
+
+data['b'] = db_scale
+data.hist()
+plt.show()
+
+scaler = StandardScaler()
+scale = scaler.fit_transform(data)
+data['b'] = scale[:,0]
+data['y'] = scale[:,1]
+data.hist()
+plt.show()
+
+y = scale[:,1].reshape(-1,1)
+X = scale[:,0].reshape(-1,1)
+
+LR = LinearRegression()
+LR.fit(X, y)
+
+y_train_pred = LR.predict(X)
+from sklearn.metrics import mean_squared_error
+print('MSE train: %.3f' %(mean_squared_error(y,y_train_pred)))
+#                                     mean_squared_error(y_test,y_test_pred)))
+from sklearn.metrics import r2_score
+print('R^2 train: %.3f' %(r2_score(y,y_train_pred)))
+#                                     r2_score(y_test,y_test_pred)))
+data = data.sort_values('y')
+print(data.head(5))
+error = my_error(df[['b', 'y']], np.array([1]*10000).reshape(-1,1))
 variance = np.var(x_m, axis=1)
 a = np.reciprocal(variance)
 aa = np.diagflat(a)
-
 
 ## weighted
 w = np.diag(r_n)

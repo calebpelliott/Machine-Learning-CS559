@@ -91,45 +91,57 @@ def my_LDA(df):
 
     #Find eigenvectors/values (W)
     eig = np.linalg.eig(np.linalg.inv(Sw).dot(Sb))
-    eigen_values, eigen_vectors = np.linalg.eig(np.linalg.inv(Sw).dot(Sb))
     eig_list = []
     for i in range(len(eig[0])):
-        eig_list.append((np.abs(eig[0][i]), eig[1][i]))
+        eig_list.append((np.abs(eig[0][i]), eig[1][:,i]))
     eig_list.sort(key=lambda y: y[0], reverse=True)
-    print(eig_list)
+
+    #Get W, only 1 dimension since only first eig value is large
+    W = eig_list[0][1].reshape(-1,1).real
+
+    #Make model
+    X_lda = np.array(X.dot(W))
+    
+    #Make predictions
+    pred = [1 if x>=-1 else 0 for x in X_lda]
+    return pred
 #heart df
-#my_LDA(df)
-clf1= LinearDiscriminantAnalysis(n_components=1)
+p = my_LDA(df)
+clf1= LinearDiscriminantAnalysis(solver='eigen')
 columns = ['age', 'sex', 'cp', 'trtbps', 'chol', 'fbs', 'restecg', 'thalachh', 'exng', 'oldpeak', 'slp', 'caa', 'thall', 'output']
 X = df[['age', 'sex', 'cp', 'trtbps', 'chol', 'fbs', 'restecg', 'thalachh', 'exng', 'oldpeak', 'slp', 'caa', 'thall']]
 y = df[['output']]
 
 clf1.fit_transform(X,y)
 y_pred = clf1.predict(X)
+loc = [p[i] != y_pred[i] for i in range(len(p))]
+print(sum(x==1 for x in y_pred))
+print(sum(x==0 for x in y_pred))
 clf2_accuracy = accuracy_score(y,y_pred)
+c = clf1.coef_
 c = clf1.explained_variance_ratio_
 
 
 wine = load_wine()
 X = pd.DataFrame(wine.data, columns=wine.feature_names)
 y = pd.Categorical.from_codes(wine.target, wine.target_names)
-print(X.head(5))
+#print(X.head(5))
 
 
 df = X.join(pd.Series(y, name='class'))
 my_LDA(df)
-print(df.head(5))
+#print(df.head(5))
 class_feature_means = pd.DataFrame(columns=wine.target_names)
 for c, rows in df.groupby('class'):
     class_feature_means[c] = rows.mean()
 
-print(class_feature_means)
+#print(class_feature_means)
 d = df.groupby('class')
-print(d.head(5))
+#print(d.head(5))
 within_class_scatter_matrix = np.zeros((13,13))
 for c, rows in df.groupby('class'):
     rows = rows.drop(['class'], axis=1)
-    print(rows)
+    #print(rows)
     s = np.zeros((13,13))
     for index, row in rows.iterrows():
         mcc = class_feature_means[c].values.reshape(-1,1)
@@ -141,7 +153,7 @@ for c, rows in df.groupby('class'):
 
 
 feature_means = df.mean()
-print(feature_means)
+#print(feature_means)
 between_class_scatter_matrix = np.zeros((13,13))
 for c in class_feature_means:    
     n = len(df.loc[df['class'] == c].index)
@@ -151,8 +163,26 @@ for c in class_feature_means:
     between_class_scatter_matrix += n * (mc - m).dot((mc - m).T)
 
 eigen_values, eigen_vectors = np.linalg.eig(np.linalg.inv(within_class_scatter_matrix).dot(between_class_scatter_matrix))
-
+#print(eigen_values)
+#print(eigen_vectors)
 pairs = [(np.abs(eigen_values[i]), eigen_vectors[:,i]) for i in range(len(eigen_values))]
 pairs = sorted(pairs, key=lambda x: x[0], reverse=True)
-for pair in pairs:
-    print(pair[0])
+#for pair in pairs:
+    #print(pair[0])
+print(pairs)
+w_matrix = np.hstack((pairs[0][1].reshape(13,1), pairs[1][1].reshape(13,1))).real
+print(w_matrix)
+X_lda = np.array(X.dot(w_matrix))
+le = LabelEncoder()
+y = le.fit_transform(df['class'])
+plt.xlabel('LD1')
+plt.ylabel('LD2')
+plt.scatter(
+    X_lda[:,0],
+    X_lda[:,1],
+    c=y,
+    cmap='rainbow',
+    alpha=0.7,
+    edgecolors='b'
+)
+plt.show()

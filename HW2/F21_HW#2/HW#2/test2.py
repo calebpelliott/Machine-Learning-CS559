@@ -48,7 +48,7 @@ def my_LDA(df):
         class_rows = i[1].iloc[:,0:-1]
         feature_means_per_class[class_i] = class_rows.mean()
 
-    #Calculate Sw
+    #Calculate in class scatter
     num_features = X.shape[1]
     Sw = np.zeros((num_features, num_features))
     for i in df.groupby(class_name):
@@ -71,10 +71,44 @@ def my_LDA(df):
             varT = var.T
             dot = var.dot(varT)
             Si = Si + dot
+        Sw = Sw + Si
+
+    overall_means = X.mean()
+    print(overall_means)
+    #Calculate between class scatter
+    Sb = np.zeros((num_features, num_features))
+    for class_label in feature_means_per_class:
+        count = df.iloc[:,-1].value_counts()[class_label]
+
+        mean_class  = feature_means_per_class[class_label].values
+        mean_class = mean_class.reshape(-1,1)
+
+        mean = overall_means.values
+        mean = mean.reshape(-1,1)
+        weighted_mean_diff = (mean_class - mean).dot((mean_class - mean).T)
+        weighted_mean_diff *= count
+        Sb = Sb + weighted_mean_diff
 
     #Find eigenvectors/values (W)
+    eig = np.linalg.eig(np.linalg.inv(Sw).dot(Sb))
+    eigen_values, eigen_vectors = np.linalg.eig(np.linalg.inv(Sw).dot(Sb))
+    eig_list = []
+    for i in range(len(eig[0])):
+        eig_list.append((np.abs(eig[0][i]), eig[1][i]))
+    eig_list.sort(key=lambda y: y[0], reverse=True)
+    print(eig_list)
 #heart df
-my_LDA(df)
+#my_LDA(df)
+clf1= LinearDiscriminantAnalysis(n_components=1)
+columns = ['age', 'sex', 'cp', 'trtbps', 'chol', 'fbs', 'restecg', 'thalachh', 'exng', 'oldpeak', 'slp', 'caa', 'thall', 'output']
+X = df[['age', 'sex', 'cp', 'trtbps', 'chol', 'fbs', 'restecg', 'thalachh', 'exng', 'oldpeak', 'slp', 'caa', 'thall']]
+y = df[['output']]
+
+clf1.fit_transform(X,y)
+y_pred = clf1.predict(X)
+clf2_accuracy = accuracy_score(y,y_pred)
+c = clf1.explained_variance_ratio_
+
 
 wine = load_wine()
 X = pd.DataFrame(wine.data, columns=wine.feature_names)
@@ -107,12 +141,13 @@ for c, rows in df.groupby('class'):
 
 
 feature_means = df.mean()
+print(feature_means)
 between_class_scatter_matrix = np.zeros((13,13))
 for c in class_feature_means:    
     n = len(df.loc[df['class'] == c].index)
     
     mc, m = class_feature_means[c].values.reshape(13,1), feature_means.values.reshape(13,1)
-    
+    math = n * (mc - m).dot((mc - m).T)
     between_class_scatter_matrix += n * (mc - m).dot((mc - m).T)
 
 eigen_values, eigen_vectors = np.linalg.eig(np.linalg.inv(within_class_scatter_matrix).dot(between_class_scatter_matrix))

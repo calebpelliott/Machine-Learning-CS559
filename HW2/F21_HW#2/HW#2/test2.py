@@ -74,7 +74,6 @@ def my_LDA(df):
         Sw = Sw + Si
 
     overall_means = X.mean()
-    print(overall_means)
     #Calculate between class scatter
     Sb = np.zeros((num_features, num_features))
     for class_label in feature_means_per_class:

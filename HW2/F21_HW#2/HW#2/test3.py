@@ -24,6 +24,7 @@ clf2 = Perceptron(eta0=0.5, random_state=1,max_iter=1000)
 
 X = df[['age', 'sex', 'cp', 'trtbps', 'chol', 'fbs', 'restecg', 'thalachh', 'exng', 'oldpeak', 'slp', 'caa', 'thall']]
 y = df[['output']]
+newdf = pd.DataFrame(data=[[X[:],y[:]]])
 X_heart = X
 y_heart = y.values.ravel()
 clf2.fit(X,y)
@@ -190,7 +191,7 @@ def my_Perceptron(df, eta, max_iter):
     X.insert(0, 'bias', [1]*num_observations)
     pred = X.dot(feature_weights).to_numpy()
     pred = [0 if x<=0 else 1 for x in pred]
-    return pred
+    return np.array(pred)
 y_guess = my_Perceptron(df, .1, 1000)
 acc = accuracy_score(y_heart,np.array(y_guess))
 x=3

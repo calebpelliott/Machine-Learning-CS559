@@ -39,7 +39,7 @@ corr = df.corr()
 
 
 
-new_df = df[['var4', 'var5', 'var6', 'var7', 'var8', 'var9']]
+new_df = df[['var1', 'var2']]
 result_df = df[['Class']]
 
 
@@ -81,7 +81,21 @@ def calcK(guess):
         print(f"Group found: {mode}")
     k = tright / 7500 * 100
     print(f"Accuracy {k}%")
+    return k
 
+accuracy = []
+below95 = False
+k = 1
+while not below95:
+    knn = KNeighborsClassifier(k)
+    knn.fit(new_df, df.iloc[:,-1])
+    knn_guess = knn.predict(new_df)
+    accuracy.append(calcK(knn_guess))
+    knn_guess = calcK(knn_guess)
+    if knn_guess < 95:
+        below95 = True
+    k += 10
+    print(k)
 calcK(km_guess)
 calcK(knn_guess)
 calcK(lr_guess)

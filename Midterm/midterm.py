@@ -66,5 +66,20 @@ def my_gradient(X, y):
             w = [b, m]
     return w
 
+def my_grad(X,Y):
+    w1 = 0.0; w2=0.0; eta=0.001
+    gradient_w1=0; gradient_w2=0
+    for i in range(0,10000):
+        y = w1*X**2+w2*X
+        error = (Y-y)
+        gradient_w1 = np.mean(-X**2*error)
+        gradient_w2 = np.mean(-X*error)
+        w1 = w1-eta*gradient_w1
+        w2 = w2-eta*gradient_w2
+        if np.mean(error**2)<=0.05:
+            print(w1,w2,np.mean(error**2)/2)
+            break
+    return w1, w2
 df = pd.read_csv("C:/Users/caleb/Documents/git/Machine-Learning-CS559/Midterm/CS559_F21_Midterm/gradient_question.csv")
+w1, w2 = my_grad(df.x,df.y)
 w= my_gradient(df['x'], df['y'])

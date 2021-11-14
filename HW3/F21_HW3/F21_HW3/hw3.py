@@ -15,7 +15,123 @@ warnings.filterwarnings("ignore")
 df = pd.read_csv('./HW3/F21_HW3/F21_HW3/F21_CS559_HW3_data.csv')
 print(df.head(5))
 
+import typing
+from sklearn.linear_model import Ridge
+def GradientBoost(model, X, y):
+    times = 10
+    lr = 0.1
 
+    yt = np.array([np.mean(y)]*len(y))
+    w = y - yt
+
+    for _ in range(times):
+        model = model.fit(X, y, sample_weight=w)
+        yt += lr * model.predict(X)
+        w = y - yt
+
+    return model.predict(X)
+
+X = df.drop('class', 1)
+y = df['class']
+
+
+
+# Compute error rate, alpha and w
+def compute_error(y, y_pred, w_i):
+    '''
+    Calculate the error rate of a weak classifier m. Arguments:
+    y: actual target value
+    y_pred: predicted value by weak classifier
+    w_i: individual weights for each observation
+    
+    Note that all arrays should be the same length
+    '''
+    return (sum(w_i * (np.not_equal(y, y_pred)).astype(int)))/sum(w_i)
+
+def compute_alpha(error):
+    '''
+    Calculate the weight of a weak classifier m in the majority vote of the final classifier. This is called
+    alpha in chapter 10.1 of The Elements of Statistical Learning. Arguments:
+    error: error rate from weak classifier m
+    '''
+    return np.log((1 - error) / error)
+
+def update_weights(w_i, alpha, y, y_pred):
+    ''' 
+    Update individual weights w_i after a boosting iteration. Arguments:
+    w_i: individual weights for each observation
+    y: actual target value
+    y_pred: predicted value by weak classifier  
+    alpha: weight of weak classifier used to estimate y_pred
+    '''  
+    return w_i * np.exp(alpha * (np.not_equal(y, y_pred)).astype(int))
+
+
+
+
+def AdaBoost(X, y, rounds = 100):
+    alphas = [] 
+    models = []
+
+    w = np.array([1/len(y)]*len(y))
+    for m in range(0, rounds):
+        
+        
+        
+        dtc = DecisionTreeClassifier()
+        dtc.fit(X, y, sample_weight = w)
+        y_pred = dtc.predict(X)
+        
+        models.append(dtc)
+        errors = []
+        for i in range(len(y)):
+            if y[i] != y_pred[i]:
+                errors.append(True)
+            else:
+                errors.append(False)
+        errors = np.array(errors)
+        error = sum(w*errors.astype(int))/sum(w)
+
+        a = np.log((1 - error) / error)
+        alphas.append(a)
+
+        errors = []
+        for i in range(len(y)):
+            if y[i] != y_pred[i]:
+                errors.append(True)
+            else:
+                errors.append(False)
+        errors = np.array(errors)
+        w2 = []
+        for i in range(len(w)):
+            if errors[i]:
+                new = w[i] * np.exp(a)
+                w2.append(new)
+            else:
+                w2.append(w[i])
+        w = np.array(w2)
+ 
+    n_df = pd.DataFrame(index = range(len(X)), columns = range(rounds)) 
+    for round in range(rounds):
+        r_model = models[round]
+        r_al = alphas[round]
+        r_pred = r_model.predict(X)*r_al
+        n_df.iloc[:,m] = r_pred
+
+    # Calculate final predictions
+    fin = n_df.T.sum()
+    fin = np.sign(fin)
+
+    return fin.astype(int)
+
+
+pred = AdaBoost(X,y,500)
+selfscore = accuracy_score(pred, y)
+print(pred)
+print(accuracy_score(pred,y))
+mygb = GradientBoost(DecisionTreeClassifier(), X,y)
+print(mygb)
+selfscore = accuracy_score(mygb, y)
 
 
 

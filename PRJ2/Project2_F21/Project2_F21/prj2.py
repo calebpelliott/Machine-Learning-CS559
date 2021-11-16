@@ -21,33 +21,26 @@ def my_grad(X,Y,Z):
     gradient_ck=0
     mse = 100
     for i in range(0,10000):
-        #y = w1*X**2+w2*X
         e1 = np.exp(-((X+ckn)**2 + (Y+ckm)**2))
-        e14 = np.exp(-(X+ckn)**2 - (Y+ckm)**2)
-        e11= np.exp(-(X+ckn)**2)
-        e12= np.exp(-(Y+ckm)**2)
-        e13=e11*e12
-        ee = sum(e1-e13)
-        if ee == 0:
-            print('c')
         e2 = np.exp(-((X+ck)**2))
         e3 = np.exp(-((Y+ck)**2))
+        
         z_pred = -c*(e1 + e2 + e3)
-        #z_pred = e2 + e3
         error = (Z-z_pred)
 
         #handle gradients
         partial_c = (e1 + e2 + e3)
         gradient_c = np.mean((partial_c*error))
 
-        partial_ckn = 2*(ckn+X)*np.exp((-1*((ckn+X)**2))-((ckm+Y)**2))
+        partial_ckn = 2*c*(ckn+X)*np.exp((-1*((ckn+X)**2))-((ckm+Y)**2))
         gradient_ckn = np.mean(-(partial_ckn*error))
 
-        partial_ckm = 2*(ckm+Y)*np.exp((-1*((ckn+X)**2))-((ckm+Y)**2))
+        partial_ckm = 2*c*(ckm+Y)*np.exp((-1*((ckn+X)**2))-((ckm+Y)**2))
         gradient_ckm = np.mean(-(partial_ckm*error))
         
-        partial_ck = 2*np.exp(-1*((ck+X)**2))*(ck+X)
-        partial_ck += 2*np.exp(-1*((ck+Y)**2))*(ck+Y)
+        partial_ck = -2*np.exp(-1*((ck+X)**2))*(ck+X)
+        partial_ck += -2*np.exp(-1*((ck+Y)**2))*(ck+Y)
+        partial_ck *= -c
         gradient_ck = np.mean(-(partial_ck*error))
 
         #gradient_ckn = np.mean(-(e11*error))

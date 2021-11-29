@@ -1,13 +1,14 @@
 import pandas as pd
 import numpy as np
+import time
 from sklearn.metrics import mean_squared_error
 
 df = pd.read_csv('./PRJ2/Project2_F21/Project2_F21/F21_CS559_Project2.csv')
 
-def my_grad(X,Y,Z):
-    eta=0.1#0.1 #.01,.001
+def my_grad(X,Y,Z, error_acceptance, eta):
+    #eta=0.1#0.1 #.01,.001
     #a
-    c = 0#0.0#1#0.0
+    c = 0.0#0.0#1#0.0
     #b
     ckn = 0.0
     #c
@@ -47,15 +48,29 @@ def my_grad(X,Y,Z):
         ckn = ckn-eta*gradient_ckn
         ckm = ckm-eta*gradient_ckm
         ck = ck-eta*gradient_ck
-        mse = mean_squared_error(Z, z_pred)
-        new_mse = np.mean(error**2)/2
-        rmse = mean_squared_error(Z, z_pred, squared=False)
-        if mse<=0.05:
+
+
+        mse = np.mean(error**2)/2
+        if mse<=error_acceptance:
             break
     return [c, ck, ckn, ckm, mse]
 
+#for eta in [.1,.01,.001]:
+#    start = time.time()
+#    for k in [0,1,2,3]:
+        # Train the model using the training sets
+#        kdf = df.loc[df['class'] == k]
+#        [c, ck, ckn, ckm, mse] = my_grad(kdf['x'],kdf['y'],kdf['z'], .078, eta)
+        #print(f"Class: {k}\n  C:{c}\n  Ck:{ck}\n  Ckn:{ckn}\n  Ckm:{ckm}\n  MSE:{mse}\n\n")
+
+#    print(f"Eta: {eta}. Time elapsed: {time.time()-start}")
+
+all_coef = []
 for k in [0,1,2,3]:
-    # Train the model using the training sets
-    kdf = df.loc[df['class'] == k]
-    [c, ck, ckn, ckm, mse] = my_grad(kdf['x'],kdf['y'],kdf['z'])
-    print(f"Class: {k}\n  C:{c}\n  Ck:{ck}\n  Ckn:{ckn}\n  Ckm:{ckm}\n  MSE:{mse}\n\n")
+        # Train the model using the training sets
+        kdf = df.loc[df['class'] == k]
+        [c, ck, ckn, ckm, mse] = my_grad(kdf['x'],kdf['y'],kdf['z'], .05, .1)
+        all_coef.append([c, ck, ckn, ckm, mse])
+        print(f"Class: {k}\n  C:{c}\n  Ck:{ck}\n  Ckn:{ckn}\n  Ckm:{ckm}\n  MSE:{mse}\n\n")
+
+for coeffs

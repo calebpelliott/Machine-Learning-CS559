@@ -68,8 +68,12 @@ class CNN_class(Model):
         return tf.nn.softmax(self.runNetwork(X))
 def accuracy(y_pred, y_true):
     # Predicted class is the index of highest score in prediction vector (i.e. argmax).
+    predict = tf.argmax(y_pred, 1)
+    predict = np.array(predict)
+    actual = np.array(y_true)
+    acc = (actual == predict).sum()/len(actual)
     correct_prediction = tf.equal(tf.argmax(y_pred, 1), tf.cast(y_true, tf.int64))
-    print(f"")
+    print(f"{acc}")
     return tf.reduce_mean(tf.cast(correct_prediction, tf.float32), axis=-1)
 def CNN(X_train, Y_train, X_test, Y_test):
     

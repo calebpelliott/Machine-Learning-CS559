@@ -66,15 +66,15 @@ class CNN_class(Model):
         return X
     def predict(self,X):
         return tf.nn.softmax(self.runNetwork(X))
-def accuracy(y_pred, y_true):
+        
+def accuracy(y_pred, y_acc):
     # Predicted class is the index of highest score in prediction vector (i.e. argmax).
     predict = tf.argmax(y_pred, 1)
     predict = np.array(predict)
-    actual = np.array(y_true)
+    actual = np.array(y_acc)
     acc = (actual == predict).sum()/len(actual)
-    correct_prediction = tf.equal(tf.argmax(y_pred, 1), tf.cast(y_true, tf.int64))
-    print(f"{acc}")
-    return tf.reduce_mean(tf.cast(correct_prediction, tf.float32), axis=-1)
+    return acc
+
 def CNN(X_train, Y_train, X_test, Y_test):
     
     # The images are 28x28. Create the input layer
@@ -140,6 +140,9 @@ def CNN(X_train, Y_train, X_test, Y_test):
         #batch_y = Y_train[start:end]
         #batch_y = np.reshape(batch_y, (-1, 28, 28, 1))
         batch = (X_train[start:end], Y_train[start:end])
+        start = end
+        end = min(end + batch_size, X_train.shape[0])
+
         batch_x = tf.convert_to_tensor(batch[0])
         batch_y = tf.convert_to_tensor(batch[1])
         batch_y = tf.cast(batch_y, tf.int64)
@@ -156,13 +159,13 @@ def CNN(X_train, Y_train, X_test, Y_test):
         if i % 50 == 0:
             prediction_y = CNN.predict(batch_x)
             a = accuracy(prediction_y, batch_y)
-            print(f"prediction: {prediction_y}, actual: {batch_y}")
             print(f"Step: {i}, accuracy: {a}")
             x=3
     # Compute accuracy using test data
-    test_accuracy = accuracy.eval(feed_dict = {
-            x: X_test, y_loss: Y_test,
-            keep_prob: 1.0})
+    batch_x = tf.convert_to_tensor(X_test)
+    batch_y = tf.convert_to_tensor(Y_test)
+    batch_y = tf.cast(batch_y, tf.int64)
+    test_accuracy = accuracy(CNN.predict(batch_x), batch_y)
     print('Test accuracy =', test_accuracy)
     
     return test_accuracy

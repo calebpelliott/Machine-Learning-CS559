@@ -20,15 +20,22 @@ for i in range(9):
 # show the figure
 #plt.show()
 
+my_images = []
+for i in range(10):
+	for n in range(1,6):
+		img = Image.open(f"./PRJ_Final/my_digits/{i}/{i}_{n}.png").convert('L')
+		arr = np.array(img.getdata(), dtype=np.uint8)
+		new_img = np.zeros(shape=(28,28))
 
-img = Image.open("./PRJ_Final/my_digits/3/3_2.png").convert('L')
-arr = np.array(img.getdata(), dtype=np.uint8)
-new_img = np.zeros(shape=(28,28))
-for i in range(28):
-	slice = arr[i*28 : i*28+28]
-	new_img[i] = slice
+		for p in range(28):
+			slice = arr[p*28 : p*28+28]
+			new_img[p] = slice
+		my_images.append(new_img)
 
 
+my_digitsX = np.array(my_images)
+my_digitsX[0] = new_img
+my_digitsY = np.array([0]*5+[1]*5+[2]*5+[3]*5+[4]*5+[5]*5+[6]*5+[7]*5+[8]*5+[9]*5, dtype=np.uint8)
 plt.imshow(new_img, cmap=plt.get_cmap('gray'))
 plt.show()
 
@@ -42,5 +49,4 @@ X_d2_test_dataset = testX.reshape((nsamples,nx*ny))
 lr_model.fit(X_d2_train_dataset, trainy)
 print(lr_model.score(X_d2_train_dataset, trainy))
 print(lr_model.score(X_d2_test_dataset, testy))
-
 

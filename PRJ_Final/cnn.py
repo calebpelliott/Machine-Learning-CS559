@@ -3,6 +3,7 @@ import math
 import numpy as np
 import tensorflow as tf
 from tensorflow.keras import Model, layers
+from PIL import Image
 #import tensorflow_datasets
 #mnist = tensorflow_datasets.load('mnist')
 #import input_data
@@ -75,7 +76,7 @@ def accuracy(y_pred, y_acc):
     acc = (actual == predict).sum()/len(actual)
     return acc
 
-def CNN(X_train, Y_train, X_test, Y_test):
+def CNN(X_train, Y_train, X_test, Y_test, my_X, my_Y):
     
     # The images are 28x28. Create the input layer
     #x = tf.placeholder(tf.float32, [None, 784])
@@ -167,8 +168,15 @@ def CNN(X_train, Y_train, X_test, Y_test):
     batch_y = tf.cast(batch_y, tf.int64)
     test_accuracy = accuracy(CNN.predict(batch_x), batch_y)
     print('Test accuracy =', test_accuracy)
+
+    # Compute accuracy using my own data
+    batch_x = tf.convert_to_tensor(my_X)
+    batch_y = tf.convert_to_tensor(my_Y)
+    batch_y = tf.cast(batch_y, tf.int64)
+    hand_accuracy = accuracy(CNN.predict(batch_x), batch_y)
+    print('Hand-written accuracy =', hand_accuracy)
     
-    return test_accuracy
+    return [test_accuracy, hand_accuracy]
 
 if __name__ == '__main__':
     x = 3
@@ -196,8 +204,26 @@ if __name__ == '__main__':
     (trainX, trainy), (testX, testy) = mnist.load_data()
     trainX = np.array(trainX, np.float32)
     testX = np.array(testX, np.float32)
-    train_y = np.array(trainy, np.int64)
+    #train_y = np.array(trainy, np.int64)
     #trainX = trainX.reshape((trainX.shape[0], 28, 28, 1))
     #testX = testX.reshape((testX.shape[0], 28, 28, 1))
-    CNN(trainX/255.0, trainy, testX/255.0, testy)
+
+    my_images = []
+    for i in range(10):
+        for n in range(1,6):
+            img = Image.open(f"./PRJ_Final/my_digits/{i}/{i}_{n}.png").convert('L')
+            arr = np.array(img.getdata(), dtype=np.uint8)
+            new_img = np.zeros(shape=(28,28))
+
+            for p in range(28):
+                slice = arr[p*28 : p*28+28]
+                new_img[p] = slice
+            my_images.append(new_img)
+
+
+    my_digitsX = np.array(my_images)
+    my_digitsX = np.array(my_digitsX, np.float32)
+    my_digitsY = np.array([0]*5+[1]*5+[2]*5+[3]*5+[4]*5+[5]*5+[6]*5+[7]*5+[8]*5+[9]*5, dtype=np.uint8)
+    my_digitsX[0] = new_img
+    CNN(trainX/255.0, trainy, testX/255.0, testy, my_digitsX/255.0, my_digitsY)
     CNN(new_train_X/255.0, new_train_y, new_test_X/255.0, new_test_y)

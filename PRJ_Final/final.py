@@ -1,14 +1,13 @@
 # example of loading the mnist dataset
-from hashlib import new
+
 from tensorflow.keras.datasets import mnist
 from matplotlib import pyplot as plt
 import numpy as np
 from sklearn import linear_model
-import pandas as pd
 from PIL import Image
-from sklearn.ensemble import GradientBoostingClassifier
 import xgboost as xgb
-from xgboost import XGBClassifier, plot_tree
+from xgboost import XGBClassifier
+from sklearn import svm
 # load dataset
 (trainX, trainy), (testX, testy) = mnist.load_data()
 # summarize loaded dataset
@@ -51,7 +50,7 @@ lr_model.fit(X_d2_train_dataset, trainy)
 print(lr_model.score(X_d2_train_dataset, trainy))
 print(lr_model.score(X_d2_test_dataset, testy))
 
-from sklearn import svm
+
 
 svm_model = svm.LinearSVC()
 

@@ -6,6 +6,9 @@ import numpy as np
 from sklearn import linear_model
 import pandas as pd
 from PIL import Image
+from sklearn.ensemble import GradientBoostingClassifier
+import xgboost as xgb
+from xgboost import XGBClassifier, plot_tree
 # load dataset
 (trainX, trainy), (testX, testy) = mnist.load_data()
 # summarize loaded dataset
@@ -36,8 +39,6 @@ for i in range(10):
 my_digitsX = np.array(my_images)
 my_digitsX[0] = new_img
 my_digitsY = np.array([0]*5+[1]*5+[2]*5+[3]*5+[4]*5+[5]*5+[6]*5+[7]*5+[8]*5+[9]*5, dtype=np.uint8)
-plt.imshow(new_img, cmap=plt.get_cmap('gray'))
-plt.show()
 
 lr_model = linear_model.LogisticRegression()
 nsamples, nx, ny = trainX.shape
@@ -50,3 +51,22 @@ lr_model.fit(X_d2_train_dataset, trainy)
 print(lr_model.score(X_d2_train_dataset, trainy))
 print(lr_model.score(X_d2_test_dataset, testy))
 
+from sklearn import svm
+
+svm_model = svm.LinearSVC()
+
+svm_model.fit(X_d2_train_dataset,trainy)
+print(svm_model.score(X_d2_train_dataset, trainy))
+print(svm_model.score(X_d2_test_dataset, testy))
+
+xgb = XGBClassifier(objective='multiclass:softmax', 
+	n_estimators = 325,
+	learning_rate = 0.1,
+	max_depth = 1
+	)
+
+xgb.fit(X_d2_train_dataset,trainy)
+predict = xgb.predict(X_d2_train_dataset)
+print(sum(predict == trainy)/len(trainy))
+predict = xgb.predict(X_d2_test_dataset)
+print(sum(predict == testy)/len(testy))

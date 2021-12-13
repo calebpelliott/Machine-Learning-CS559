@@ -226,4 +226,3 @@ if __name__ == '__main__':
     my_digitsY = np.array([0]*5+[1]*5+[2]*5+[3]*5+[4]*5+[5]*5+[6]*5+[7]*5+[8]*5+[9]*5, dtype=np.uint8)
     my_digitsX[0] = new_img
     CNN(trainX/255.0, trainy, testX/255.0, testy, my_digitsX/255.0, my_digitsY)
-    CNN(new_train_X/255.0, new_train_y, new_test_X/255.0, new_test_y)

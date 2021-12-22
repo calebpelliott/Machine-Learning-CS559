@@ -37,7 +37,7 @@ def max_pooling(x):
     return tf.nn.max_pool(x, ksize=[1, 2, 2, 1],
             strides=[1, 2, 2, 1], padding='SAME')
 
-def CNN(X_train, Y_train, X_test, Y_test):
+def CNN(X_train, Y_train, X_test, Y_test, my_digitsX, my_digitsY):
     
     # The images are 28x28, so create the input layer 
     # with 784 neurons (28x28=784) 
@@ -125,8 +125,14 @@ def CNN(X_train, Y_train, X_test, Y_test):
             x: X_test, y_loss: Y_test,
             keep_prob: 1.0})
     print('Test accuracy =', test_accuracy)
+
+    # Compute accuracy using test data
+    digits_accuracy = accuracy.eval(feed_dict = {
+            x: my_digitsX, y_loss: my_digitsY,
+            keep_prob: 1.0})
+    print('Digits accuracy =', digits_accuracy)
     
-    return test_accuracy
+    return [test_accuracy,digits_accuracy]
 
 
 rootdir = './PRJ_Final/my_digits'
@@ -141,24 +147,31 @@ def read_img(img_path):
             x_img[idx] = 255 - img[i][j][0]
             
     return x_img, img
-    
-X_mydigits = []
-Y_mydigits = []
-digit_imgs = []
+from PIL import Image
+my_images = []
+for i in range(10):
+	for n in range(1,6):
+		img = Image.open(f"./PRJ_Final/my_digits/{i}/{i}_{n}.png").convert('L')
+		arr = np.array(img.getdata(), dtype=np.uint8)
+		new_img = np.zeros(shape=(28,28))
 
-# read handwritten digits
-for subdir, dirs, files in os.walk(rootdir):
-    for file in files:
-        if file.endswith(".jpg") or file.endswith(".png"):
-            path = os.path.join(subdir, file)
-            digit, img = read_img(path)
-            label = int(os.path.splitext(file)[0])
-            X_mydigits.append(digit)
-            Y_mydigits.append(label)
-            digit_imgs.append(img)
+		for p in range(28):
+			slice = arr[p*28 : p*28+28]
+			new_img[p] = slice
+		my_images.append(new_img.flatten())
+
+
+ohe = preprocessing.OneHotEncoder()
+my_digitsX = np.array(my_images)
+my_digitsY = np.array([0]*5+[1]*5+[2]*5+[3]*5+[4]*5+[5]*5+[6]*5+[7]*5+[8]*5+[9]*5, dtype=np.uint8)
+my_digitsY = my_digitsY.reshape(-1,1)
+ohe.fit(my_digitsY)
+my_digitsY = ohe.transform(my_digitsY).toarray()
+my_digitsY = np.array(my_digitsY)
+
 
 (train_X, train_y), (test_X, test_y) = mnist.load_data()
-ohe = preprocessing.OneHotEncoder()
+
 train_y = train_y.reshape(-1, 1)
 test_y = test_y.reshape(-1, 1)
 
@@ -178,9 +191,7 @@ newX_test = []
 for i in test_X:
     newX_test.append(i.flatten())
 
+newX_test = np.array(newX_test)
 newX = np.array(newX)
-X_mydigits = np.array(X_mydigits)
-Y_mydigits = np.array(Y_mydigits)
-Y_mydigits = Y_mydigits.T
-#Y_mydigits = np.array([5]*50)
-CNN(newX, train_y, newX_test, test_y)
+
+CNN(newX, train_y, newX_test, test_y, my_digitsX, my_digitsY)
